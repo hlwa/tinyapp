@@ -1,6 +1,4 @@
-const generateRandomString = () =>{
-
-};
+const generateRandomString = () => Math.random().toString(36).slice(-6);
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -28,7 +26,6 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  //urlDatabase['body'] = req.body.longURL;
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
@@ -43,6 +40,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  urlDatabase[generateRandomString()] = req.body.longURL;
   console.log(req.body);  // Log the POST request body to the console
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
