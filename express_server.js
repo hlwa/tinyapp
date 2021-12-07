@@ -49,7 +49,10 @@ app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
-
+app.post("/urls/:shortURL/link", (req, res) => {
+  const shortUrlToBeLinked = req.params.shortURL;
+  res.redirect(`/urls/${shortUrlToBeLinked}`);
+});
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortUrlToBeDeleted = req.params.shortURL;
   //console.log('urlToBeDeleted', urlDatabase);
