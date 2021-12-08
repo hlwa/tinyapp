@@ -9,17 +9,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
 app.get("/", (req, res) => {
-  // Cookies that have not been signed
-  //console.log('Cookies: ', req.cookies);
-
-  // Cookies that have been signed
-  //console.log('Signed Cookies: ', req.signedCookies);
 
   res.send("Hello!");
 });
@@ -33,16 +29,22 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"],
+  };
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"],};
   res.render("urls_show", templateVars);
 });
 
@@ -73,6 +75,17 @@ app.post("/urls/:shortURL/update", (req, res) => {
   urlDatabase[shortUrlToBeUpdated] = req.body.longURL;
   //console.log('urlDatabase', urlDatabase);
   res.redirect('/urls');
+});
+app.post("/urls/logout", (req, res) => {
+  res.clearCookie('username');
+  console.log('cookie cleared successfully!');
+  res.redirect('/urls');
+});
+
+app.post("/urls/login", (req, res) => {
+  res.cookie('username', req.body.login);
+  res.redirect('/urls');
+  console.log(req.cookies['username']);
 });
 
 app.listen(PORT, () => {
