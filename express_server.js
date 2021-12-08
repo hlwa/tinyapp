@@ -3,9 +3,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
-
+app.use(cookieParser());
 
 
 const urlDatabase = {
@@ -14,6 +15,12 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
+  // Cookies that have not been signed
+  //console.log('Cookies: ', req.cookies);
+
+  // Cookies that have been signed
+  //console.log('Signed Cookies: ', req.signedCookies);
+
   res.send("Hello!");
 });
 
