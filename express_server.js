@@ -33,7 +33,7 @@ const urlDatabase = {
 const findUserByEmail = email => {
   for (const userId in users) {
     if (users[userId]['email'] === email) {
-      return users[userId]['id'];
+      return users[userId];
     }
   }
   return null;
@@ -55,7 +55,6 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.cookies['user_id'];
   const templateVars = {urls: urlDatabase, user: users[userId]};
-  //console.log(req.cookies['username']);
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
@@ -116,7 +115,6 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 app.post("/urls/login", (req, res) => {
-  //res.cookie('username', req.body.login);
   res.redirect('/login');
   //When browser post request to server, server need to send back requirement to broswer to set cookie.Cookies belong to broswer not server.
 });
@@ -124,20 +122,38 @@ app.post("/urls/login", (req, res) => {
 app.post("/urls/logout", (req, res) => {
   res.clearCookie('user_id');
   console.log('cookie cleared successfully!');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const user = findUserByEmail(email);
   if (email === '' || password === '') {
     return res.status(400).send('Email and password cannot be blank');
   }
-  if (findUserByEmail(email)) {
-    return res.status(400).send('a user with that email already exists');
+  if (user) {
+    return res.status(400).send('A user with that email already exists');
   }
   const id = generateRandomString();
   users[id] = {id, email, password};
+  res.cookie('user_id', id);
+  res.redirect('/urls');
+});
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = findUserByEmail(email);
+  if (email === '' || password === '') {
+    return res.status(400).send('Email and password cannot be blank');
+  }
+  if (!user) {
+    return res.status(403).send('Your email or password does not match');
+  } else if (user.password !== password) {
+    return res.status(403).send('Your email or password does not match');
+  }
+  const id = user.id;
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
