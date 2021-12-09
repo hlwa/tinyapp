@@ -11,6 +11,18 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('public'));
 
 const generateRandomString = () => Math.random().toString(36).slice(-6);
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
 
 const urlDatabase = {
@@ -36,7 +48,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     username: req.cookies["username"],
   };
-  console.log(req.cookies['username']);
+  //console.log(req.cookies['username']);
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
@@ -93,6 +105,15 @@ app.get("/register", (req, res) => {
     username: req.cookies["username"],
   };
   res.render('register', templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const id = generateRandomString();
+  users[id] = {id, email, password};
+  res.redirect('/urls');
+  console.log(users[id]);
 });
 
 app.listen(PORT, () => {
