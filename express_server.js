@@ -30,6 +30,15 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const findUserByEmail = email => {
+  for (const userId in users) {
+    if (users[userId]['email'] === email) {
+      return users[userId]['id'];
+    }
+  }
+  return null;
+};
+
 app.get("/", (req, res) => {
 
   res.send("Hello!");
@@ -108,11 +117,16 @@ app.post("/urls/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  if (email === '' || password === '') {
+    return res.status(400).send('Email and password cannot be blank');
+  }
+  if (findUserByEmail(email)) {
+    return res.status(400).send('a user with that email already exists');
+  }
   const id = generateRandomString();
   users[id] = {id, email, password};
   res.cookie('user_id', id);
   res.redirect('/urls');
-  //console.log(users[id]);
 });
 
 app.listen(PORT, () => {
