@@ -9,7 +9,7 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <a>
-          <% if (!username || username === "undefined") { %>
+          <% if (!user || user === "undefined") { %>
           <form class="form-inline" action="/urls/login" method="POST" style="margin-left:45em;">
             <div class="form-group mb-2">
               <label for="login"></label>
@@ -21,7 +21,7 @@
             <form class="form-inline" action="/urls/logout" method="POST" style="margin-left:45em;">
               <div class="form-group mb-2">
                 <label for="logout"></label>
-                <div>Logged In As : <%= username %></div>
+                <div>Logged In As : <%= user.email %></div>
                 <button type="submit" class="btn btn-outline-dark" style="margin-left: 1em;font-size:18px">Logout</button>
               </div>
             </form>

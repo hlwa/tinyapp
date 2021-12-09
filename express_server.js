@@ -44,23 +44,21 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    username: req.cookies["username"],
-  };
+  const userId = req.cookies['user_id'];
+  const templateVars = {urls: urlDatabase, user: users[userId]};
   //console.log(req.cookies['username']);
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
+  const userId = req.cookies['user_id'];
+  const templateVars = {user: users[userId]};
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"],};
+  const userId = req.cookies['user_id'];
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[userId]};
   res.render("urls_show", templateVars);
 });
 
@@ -73,6 +71,13 @@ app.post("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+});
+app.get("/register", (req, res) => {
+  const userId = req.cookies['user_id'];
+  const templateVars = {
+    user: users[userId],
+  };
+  res.render('register', templateVars);
 });
 app.post("/urls/:shortURL/link", (req, res) => {
   const shortUrlToBeLinked = req.params.shortURL;
@@ -89,22 +94,15 @@ app.post("/urls/:shortURL/update", (req, res) => {
   res.redirect('/urls');
 });
 app.post("/urls/login", (req, res) => {
-  res.cookie('username', req.body.login);
+  //res.cookie('username', req.body.login);
   res.redirect('/urls');
   //When browser post request to server, server need to send back requirement to broswer to set cookie.Cookies belong to broswer not server.
 });
 
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   console.log('cookie cleared successfully!');
   res.redirect('/urls');
-});
-
-app.get("/register", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"],
-  };
-  res.render('register', templateVars);
 });
 
 app.post("/register", (req, res) => {
