@@ -52,7 +52,7 @@ const urlsForUser = id => {
   return urls;
 };
 
-const findUserByEmail = email => {
+const findUserByEmail = (email, users) => {
   for (const userId in users) {
     if (users[userId]['email'] === email) {
       return users[userId];
@@ -115,7 +115,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    res.clearCookie('user_id');
+    req.session = null;
   }
   //whenever browser get register form server, server will return there is no user record
   const templateVars = {
@@ -127,7 +127,7 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    res.clearCookie('user_id');
+    req.session = null;
   }
   //whenever browser get login form server, server will return there is no user record
   const templateVars = {
@@ -184,7 +184,7 @@ app.post("/urls/register", (req, res) => {
 });
 
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   console.log('cookie cleared successfully!');
   res.redirect('/login');
 });
@@ -193,7 +193,7 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const passwordRaw = req.body.password;
   const password = bcrypt.hashSync(passwordRaw, 10);
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
   if (email === '' || passwordRaw === '') {
     return res.status(400).send('Email and password cannot be blank');
   }
@@ -203,6 +203,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   users[id] = {id, email, password};
   //res.cookie('user_id', id);
+  // eslint-disable-next-line camelcase
   req.session.user_id = id;
   console.log(users);
   res.redirect('/urls');
@@ -212,7 +213,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const passwordRaw = req.body.password;
   
-  const user = findUserByEmail(email);
+  const user = findUserByEmail(email, users);
   if (email === '' || passwordRaw === '') {
     return res.status(400).send('Email and password cannot be blank');
   }
@@ -225,6 +226,7 @@ app.post("/login", (req, res) => {
   }
   const id = user.id;
   //res.cookie('user_id', id);
+  // eslint-disable-next-line camelcase
   req.session.user_id = id;
 
   res.redirect('/urls');
