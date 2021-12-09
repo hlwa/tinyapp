@@ -1,6 +1,7 @@
 const cookieSession = require('cookie-session');
 const express = require("express");
 const morgan = require('morgan');
+const { findUserByEmail } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
@@ -50,15 +51,6 @@ const urlsForUser = id => {
     }
   }
   return urls;
-};
-
-const findUserByEmail = (email, users) => {
-  for (const userId in users) {
-    if (users[userId]['email'] === email) {
-      return users[userId];
-    }
-  }
-  return null;
 };
 
 app.get("/", (req, res) => {
@@ -115,7 +107,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    delete req.session;
+    req.session = null;
   }
   //whenever browser get register form server, server will return there is no user record
   const templateVars = {
@@ -127,7 +119,7 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    delete req.session;
+    req.session = null;
   }
   //whenever browser get login form server, server will return there is no user record
   const templateVars = {
@@ -184,7 +176,7 @@ app.post("/urls/register", (req, res) => {
 });
 
 app.post("/urls/logout", (req, res) => {
-  delete req.session;
+  req.session = null;
   console.log('cookie cleared successfully!');
   res.redirect('/login');
 });
