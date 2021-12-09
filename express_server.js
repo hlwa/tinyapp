@@ -1,13 +1,16 @@
-const generateRandomString = () => Math.random().toString(36).slice(-6);
 const express = require("express");
+const morgan = require('morgan');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+app.use(morgan('dev'));
+app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(express.static('public'));
 
+const generateRandomString = () => Math.random().toString(36).slice(-6);
 
 
 const urlDatabase = {
@@ -33,6 +36,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     username: req.cookies["username"],
   };
+  console.log(req.cookies['username']);
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
@@ -64,28 +68,31 @@ app.post("/urls/:shortURL/link", (req, res) => {
 });
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortUrlToBeDeleted = req.params.shortURL;
-  //console.log('urlToBeDeleted', urlDatabase);
   delete urlDatabase[shortUrlToBeDeleted];
-  //console.log('urlDatabase', urlDatabase);
   res.redirect('/urls');
 });
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortUrlToBeUpdated = req.params.shortURL;
-  //console.log('shortUrlToBeUpdated', urlDatabase);
   urlDatabase[shortUrlToBeUpdated] = req.body.longURL;
-  //console.log('urlDatabase', urlDatabase);
   res.redirect('/urls');
 });
+app.post("/urls/login", (req, res) => {
+  res.cookie('username', req.body.login);
+  res.redirect('/urls');
+  //When browser post request to server, server need to send back requirement to broswer to set cookie.Cookies belong to broswer not server.
+});
+
 app.post("/urls/logout", (req, res) => {
   res.clearCookie('username');
   console.log('cookie cleared successfully!');
   res.redirect('/urls');
 });
 
-app.post("/urls/login", (req, res) => {
-  res.cookie('username', req.body.login);
-  res.redirect('/urls');
-  console.log(req.cookies['username']);
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render('register', templateVars);
 });
 
 app.listen(PORT, () => {
