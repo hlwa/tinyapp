@@ -26,7 +26,7 @@
         <% for(let url in urls) { %><!-- urls is from express_server.js -->
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url]['longURL'] %></td>
             <td>
               <form method="POST" action='/urls/<%= url %>/link'>
                 <button type="submit" class="btn btn-outline-primary">Edit</button>
