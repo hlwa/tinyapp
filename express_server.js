@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.set("view engine", "ejs");
@@ -11,16 +12,17 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('public'));
 
 const generateRandomString = () => Math.random().toString(36).slice(-6);
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 };
 
@@ -184,9 +186,10 @@ app.post("/urls/logout", (req, res) => {
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const passwordRaw = req.body.password;
+  const password = bcrypt.hashSync(passwordRaw, 10);
   const user = findUserByEmail(email);
-  if (email === '' || password === '') {
+  if (email === '' || passwordRaw === '') {
     return res.status(400).send('Email and password cannot be blank');
   }
   if (user) {
@@ -195,23 +198,28 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   users[id] = {id, email, password};
   res.cookie('user_id', id);
+  console.log(users);
   res.redirect('/urls');
 });
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const passwordRaw = req.body.password;
+  
   const user = findUserByEmail(email);
-  if (email === '' || password === '') {
+  if (email === '' || passwordRaw === '') {
     return res.status(400).send('Email and password cannot be blank');
   }
   if (!user) {
     return res.status(403).send('Your email or password does not match');
-  } else if (user.password !== password) {
+  }
+  const passwordTrue = bcrypt.compareSync(passwordRaw, user.password);
+  if (!passwordTrue) {
     return res.status(403).send('Your email or password does not match');
   }
   const id = user.id;
   res.cookie('user_id', id);
+
   res.redirect('/urls');
 });
 
