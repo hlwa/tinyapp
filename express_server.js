@@ -117,7 +117,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
 
 app.post("/urls/login", (req, res) => {
   //res.cookie('username', req.body.login);
-  res.redirect('/urls');
+  res.redirect('/login');
   //When browser post request to server, server need to send back requirement to broswer to set cookie.Cookies belong to broswer not server.
 });
 
