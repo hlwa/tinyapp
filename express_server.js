@@ -112,8 +112,9 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const id = generateRandomString();
   users[id] = {id, email, password};
+  res.cookie('user_id', id);
   res.redirect('/urls');
-  console.log(users[id]);
+  //console.log(users[id]);
 });
 
 app.listen(PORT, () => {
