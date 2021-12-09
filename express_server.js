@@ -24,7 +24,6 @@ const users = {
   }
 };
 
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -34,6 +33,16 @@ const urlDatabase = {
     longURL: "https://www.google.ca",
     userID: "aJ48lW"
   }
+};
+
+const urlsForUser = id => {
+  let urls = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key]['userID'] === id) {
+      urls[key] = urlDatabase[key]['longURL'];
+    }
+  }
+  return urls;
 };
 
 const findUserByEmail = email => {
@@ -60,10 +69,11 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.cookies['user_id'];
+  const urls = urlsForUser(userId);
   if (!userId) {
-    res.redirect('/login');
+    res.render("urls_error");
   }
-  const templateVars = {urls: urlDatabase, user: users[userId]};
+  const templateVars = {urls, user: users[userId]};
   res.render("urls_index", templateVars);//urls_index.ejs, ejs can find file automatically
 });
 
@@ -78,10 +88,11 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;//if there is no record in the database? sever will crush
-  if (!urlDatabase[shortURL]) {
+  const userId = req.cookies['user_id'];
+  const urls = urlsForUser(userId);
+  if (!urls[shortURL]) {
     return res.status(400).send('No record');
   }
-  const userId = req.cookies['user_id'];
   if (!userId) {
     res.redirect('/login');
   }
@@ -92,8 +103,11 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+  // const userId = req.cookies['user_id'];
+  // const urls = urlsForUser(userId);
+  // console.log(urls[shortURL]);|| urls[shortURL]
   const longURL = urlDatabase[shortURL]['longURL'];
-  res.redirect(longURL);
+  res.redirect(longURL);//new url should start with https://
 });
 
 app.get("/register", (req, res) => {
@@ -112,29 +126,42 @@ app.get("/login", (req, res) => {
   res.render('login',templateVars);
 });
 
-app.post("/urls", (req, res) => {
+app.post("/urls", (req, res) => {//create newurl pages and will add new urls to urlDatabase
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   const userID = req.cookies['user_id'];
   urlDatabase[shortURL] = {longURL, userID};
+  //console.log(urlDatabase); Tested: new url can be sotred in urlDatabase
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL/link", (req, res) => {
+app.post("/urls/:shortURL/link", (req, res) => {//edit button will link to /urls/id page
   const shortUrlToBeLinked = req.params.shortURL;
   res.redirect(`/urls/${shortUrlToBeLinked}`);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.post("/urls/:shortURL/delete", (req, res) => {//delete button
   const shortUrlToBeDeleted = req.params.shortURL;
-  delete urlDatabase[shortUrlToBeDeleted];
-  res.redirect('/urls');
+  const userId = req.cookies['user_id'];
+  const urls = urlsForUser(userId);
+  if (!urls[shortUrlToBeDeleted]) {
+    res.render('access_error');
+  } else {
+    delete urlDatabase[shortUrlToBeDeleted];
+    res.redirect('/urls');
+  }
 });
 
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortUrlToBeUpdated = req.params.shortURL;
-  urlDatabase[shortUrlToBeUpdated]['longURL'] = req.body.longURL;
-  res.redirect('/urls');
+  const userId = req.cookies['user_id'];
+  const urls = urlsForUser(userId);
+  if (!urls[shortUrlToBeUpdated]) {
+    res.render('access_error');
+  } else {
+    urlDatabase[shortUrlToBeUpdated]['longURL'] = req.body.longURL;
+    res.redirect('/urls');
+  }
 });
 
 app.post("/urls/login", (req, res) => {
