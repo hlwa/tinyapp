@@ -115,7 +115,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    req.session = null;
+    delete req.session;
   }
   //whenever browser get register form server, server will return there is no user record
   const templateVars = {
@@ -127,7 +127,7 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const userID = req.session.user_id;
   if (userID) {
-    req.session = null;
+    delete req.session;
   }
   //whenever browser get login form server, server will return there is no user record
   const templateVars = {
@@ -184,7 +184,7 @@ app.post("/urls/register", (req, res) => {
 });
 
 app.post("/urls/logout", (req, res) => {
-  req.session = null;
+  delete req.session;
   console.log('cookie cleared successfully!');
   res.redirect('/login');
 });
