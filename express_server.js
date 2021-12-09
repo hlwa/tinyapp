@@ -71,16 +71,11 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  urlDatabase[generateRandomString()] = req.body.longURL;
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-});
-
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
+
 app.get("/register", (req, res) => {
   const userId = req.cookies['user_id'];
   const templateVars = {
@@ -88,20 +83,38 @@ app.get("/register", (req, res) => {
   };
   res.render('register', templateVars);
 });
+
+app.get("/login", (req, res) => {
+  const userId = req.cookies['user_id'];
+  const templateVars = {
+    user: users[userId],
+  };
+  res.render('login',templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  urlDatabase[generateRandomString()] = req.body.longURL;
+  console.log(req.body);  // Log the POST request body to the console
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+});
+
 app.post("/urls/:shortURL/link", (req, res) => {
   const shortUrlToBeLinked = req.params.shortURL;
   res.redirect(`/urls/${shortUrlToBeLinked}`);
 });
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortUrlToBeDeleted = req.params.shortURL;
   delete urlDatabase[shortUrlToBeDeleted];
   res.redirect('/urls');
 });
+
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortUrlToBeUpdated = req.params.shortURL;
   urlDatabase[shortUrlToBeUpdated] = req.body.longURL;
   res.redirect('/urls');
 });
+
 app.post("/urls/login", (req, res) => {
   //res.cookie('username', req.body.login);
   res.redirect('/urls');
