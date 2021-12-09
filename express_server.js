@@ -1,3 +1,4 @@
+const cookieSession = require('cookie-session');
 const express = require("express");
 const morgan = require('morgan');
 const app = express();
@@ -10,6 +11,10 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('public'));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['purple-monkey-dinosaur'],
+}));
 
 const generateRandomString = () => Math.random().toString(36).slice(-6);
 
@@ -65,7 +70,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   if (!userId) {
     res.redirect('/login');
   }
@@ -75,7 +80,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   if (!userId) {
     res.redirect('/login');
   }
@@ -85,7 +90,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   if (!userId) {
     res.redirect('/login');
   }
@@ -108,7 +113,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (userID) {
     res.clearCookie('user_id');
   }
@@ -120,7 +125,7 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   if (userID) {
     res.clearCookie('user_id');
   }
@@ -134,7 +139,7 @@ app.get("/login", (req, res) => {
 app.post("/urls", (req, res) => {//create newurl pages and will add new urls to urlDatabase
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   urlDatabase[shortURL] = {longURL, userID};
   //console.log(urlDatabase); Tested: new url can be sotred in urlDatabase
   res.redirect("/urls");
@@ -147,7 +152,7 @@ app.post("/urls/:shortURL/link", (req, res) => {//edit button will link to /urls
 
 app.post("/urls/:shortURL/delete", (req, res) => {//delete button
   const shortUrlToBeDeleted = req.params.shortURL;
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const urls = urlsForUser(userId);
   if (!urls[shortUrlToBeDeleted]) {
     res.send("<html><body><b>error: Not your record</b></body></html>\n");
@@ -159,7 +164,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {//delete button
 
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortUrlToBeUpdated = req.params.shortURL;
-  const userId = req.cookies['user_id'];
+  const userId = req.session.user_id;
   const urls = urlsForUser(userId);
   if (!urls[shortUrlToBeUpdated]) {
     res.send("<html><body><b>error: Not your record</b></body></html>\n");
@@ -197,7 +202,8 @@ app.post("/register", (req, res) => {
   }
   const id = generateRandomString();
   users[id] = {id, email, password};
-  res.cookie('user_id', id);
+  //res.cookie('user_id', id);
+  req.session.user_id = id;
   console.log(users);
   res.redirect('/urls');
 });
@@ -218,7 +224,8 @@ app.post("/login", (req, res) => {
     return res.status(403).send('Your email or password does not match');
   }
   const id = user.id;
-  res.cookie('user_id', id);
+  //res.cookie('user_id', id);
+  req.session.user_id = id;
 
   res.redirect('/urls');
 });
